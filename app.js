@@ -53,11 +53,11 @@ app.delete('/complete', (req, res) => {
  */
 
 function findUserByUUID(uuid) {
-  const users = users.filter(user => user.id === uuid);
-  if (users.length === 0) {
+  const users1 = users.filter(user => user.id === uuid);
+  if (users1.length === 0) {
     return;
   }
-  return users[0];
+  return users1[0];
 }
 
 function registerUser(id) {
@@ -71,23 +71,26 @@ function registerUser(id) {
 }
 
 function uuidByHeaders(header) {
-  return +(header.authorization.split(' ')[1]);
+  return header.authorization.split(' ')[1];
 }
 
 // auth middleware
 app.use((req, res, next) => {
 
   const uuid = uuidByHeaders(req.headers);
+
+  console.log(`auth mw - uuid: ${uuid}`);
+
   const user = findUserByUUID(uuid);
   if (!user) {
-    registerUser(uuid);
+    const user = registerUser(uuid);
+    console.log(`auth mw - registered `, user);
   }
   next();
 });
 
-app.get('/user/', (req, res) => {
+app.get('/user', (req, res) => {
   const user = findUserByUUID(uuidByHeaders(req.headers));
-  console.log(user);
   res.send(user);
 });
 
