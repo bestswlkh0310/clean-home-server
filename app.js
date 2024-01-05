@@ -1,162 +1,17 @@
 import express from 'express';
+import {authMiddleware} from "./src/global/middleware/auth.middleware.js";
+import {logMiddleware} from "./src/global/middleware/log.middleware.js";
+import {itemRouter} from "./src/feature/item/item.router.js";
+import {userRouter} from "./src/feature/user/user.router.js";
 const app = express();
 const port = 3000;
 app.use(express.json());
-// log middleware
-app.use((req, res, next) => {
-  console.log(`[${new Date().toLocaleString()}] ${req.method} ${req.url}`);
-  next();
-});
 
-/**
- * - itemModel
- * @id: PrimaryKey(Int)
- * @itemName: String
- * @createdAt: Date
- * @cost: Int
- */
-let items = [
-  {
-    id: 1,
-    itemName: 'test1',
-    createdAt: '2024!',
-    cost: 100
-  },
-  {
-    id: 2,
-    itemName: 'test2',
-    createdAt: '2024!',
-    cost: 200
-  },
-  {
-    id: 3,
-    itemName: 'test2',
-    createdAt: '2024!',
-    cost: 200
-  },
-  {
-    id: 4,
-    itemName: 'test2',
-    createdAt: '2024!',
-    cost: 200
-  },
-  {
-    id: 5,
-    itemName: 'test2',
-    createdAt: '2024!',
-    cost: 200
-  },
-];
+app.use(logMiddleware);
+app.use(authMiddleware);
 
-/**
- * - userModel
- * @id: PrimaryKey(UUID)
- * @name: String
- * @cost: Int
- */
-let users = [];
-
-// auth middleware
-app.use((req, res, next) => {
-
-  const uuid = uuidByHeaders(req.headers);
-
-  console.log(`auth mw - uuid: ${uuid}`);
-
-  const user = findUserByUUID(uuid);
-  if (!user) {
-    const user = registerUser(uuid);
-    console.log(`auth mw - registered `, user);
-  }
-  next();
-});
-
-
-/**
- * - itemController
- */
-
-function findItemById(id) {
-  const items1 = items.filter(item => item.id === id);
-  if (items1.length === 0) {
-    return;
-  }
-  return items1[0];
-}
-
-// get all items
-app.get('/item/all', (req, res) => {
-  res.send(items);
-});
-
-// to add item to clean
-app.post('/add', (req, res) => {
-
-});
-
-// complete clean
-app.post('/item/complete', (req, res) => {
-  const user = findUserByUUID(uuidByHeaders(req.headers));
-  const {id} = req.body;
-
-  const item = findItemById(id);
-  if (!item) {
-    return res.status(400).send({
-      message: '잘못된 아이템'
-    })
-  }
-  items = items.filter(item => item.id !== id);
-  user.cost += item.cost;
-  res.send(items);
-});
-
-/**
- * - userController
- */
-
-function findUserByUUID(uuid) {
-  const users1 = users.filter(user => user.id === uuid);
-  if (users1.length === 0) {
-    return;
-  }
-  return users1[0];
-}
-
-function registerUser(id) {
-  const user = {
-    id: id,
-    name: '이름을 지어주셈',
-    cost: 0
-  }
-  users.push(user);
-  return user;
-}
-
-function uuidByHeaders(header) {
-  return header.authorization.split(' ')[1];
-}
-
-app.get('/user', (req, res) => {
-  const user = findUserByUUID(uuidByHeaders(req.headers));
-  res.send(user);
-});
-
-app.patch('/user', (req, res) => {
-  console.log(req.body);
-  const {id, name} = req.body;
-
-  const user = findUserByUUID(id);
-
-  if (!user) {
-    return res.status(400).send({
-      message: 'not found user'
-    });
-  }
-
-  user.name = name;
-  return res.send(user);
-
-});
+app.use('/user', userRouter);
+app.use('/item', itemRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
