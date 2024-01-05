@@ -1,7 +1,7 @@
 import {items} from "../../store/item.store.js";
 import {uuidByHeaders} from "../../util/user.util.js";
 import {findUserByUUID} from "../user/user.repository.js";
-import {findItemById} from "./item.repository.js";
+import {findItemById, removeItem} from "./item.repository.js";
 
 
 export const getItemAll = (req, res) => {
@@ -18,7 +18,9 @@ export const completeClean = (req, res) => {
       message: '잘못된 아이템'
     });
   }
-  items = items.filter(item => item.id !== id);
+
+  const items = removeItem(id);
+
   user.cost += item.cost;
   res.send(items);
 }
