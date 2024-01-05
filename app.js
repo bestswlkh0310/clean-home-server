@@ -76,7 +76,9 @@ app.patch('/name', (req, res) => {
     res.send(user);
   }
 
-  res.send();
+  res.status(400).send({
+    message: 'not found user'
+  });
 });
 
 app.listen(port, () => {
