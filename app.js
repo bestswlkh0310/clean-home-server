@@ -52,27 +52,51 @@ app.delete('/complete', (req, res) => {
  * - userController
  */
 
-function isRegister(id) {
-  return users.filter(user => user.id === id).length > 0;
+function findUserByUUID(uuid) {
+  const users = users.filter(user => user.id === uuid);
+  if (users.length === 0) {
+    return;
+  }
+  return users[0];
 }
 
-function findUserById(id) {
-  return users.filter(user => user.id === id)[0];
+function registerUser(id) {
+  const user = {
+    id: id,
+    name: '이름을 지어주셈',
+    cost: 0
+  }
+  users.push(user);
+  return user;
+}
+
+function uuidByHeaders(header) {
+  return +(header.authorization.split(' ')[1]);
 }
 
 // auth middleware
 app.use((req, res, next) => {
-  const authorization = req.headers.authorization;
-  console.log(authorization);
+
+  const uuid = uuidByHeaders(req.headers);
+  const user = findUserByUUID(uuid);
+  if (!user) {
+    registerUser(uuid);
+  }
   next();
+});
+
+app.get('/user/', (req, res) => {
+  const user = findUserByUUID(uuidByHeaders(req.headers));
+  console.log(user);
+  res.send(user);
 });
 
 app.patch('/name', (req, res) => {
   const {id, name} = req.body;
-  if (isRegister(id)) {
-    const user = findUserById(id);
-    res.send(user);
-  }
+  // if (isRegister(id)) {
+  //   const user = findUserById(id);
+  //   res.send(user);
+  // }
 
   res.status(400).send({
     message: 'not found user'
