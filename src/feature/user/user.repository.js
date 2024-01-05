@@ -19,3 +19,12 @@ export function registerUser(id) {
   users.push(user);
   return user;
 }
+
+export function getAll() {
+  return users;
+}
+
+export function fixUser(id, cost) {
+  const user = findUserByUUID(id);
+
+}

@@ -1,5 +1,5 @@
 import {uuidByHeaders} from "../../util/user.util.js";
-import {findUserByUUID} from "./user.repository.js";
+import {findUserByUUID, getAll} from "./user.repository.js";
 
 export const getUser = (req, res) => {
   const user = findUserByUUID(uuidByHeaders(req.headers));
@@ -20,4 +20,11 @@ export const fixUser = (req, res) => {
   user.name = name;
   return res.send(user);
 
+}
+
+
+// MARK: - for admin
+export const getAllUser = (req, res) => {
+  const users = getAll();
+  res.send(users);
 }
