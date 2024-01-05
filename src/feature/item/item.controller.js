@@ -1,7 +1,7 @@
 import {items} from "../../store/item.store.js";
 import {uuidByHeaders} from "../../util/user.util.js";
 import {findUserByUUID} from "../user/user.repository.js";
-import {findItemById, removeItem} from "./item.repository.js";
+import {findItemById, insertItem, removeItem} from "./item.repository.js";
 
 
 export const getItemAll = (req, res) => {
@@ -22,5 +22,11 @@ export const completeClean = (req, res) => {
   const items = removeItem(id);
 
   user.cost += item.cost;
+  res.send(items);
+}
+
+export const addItem = (req, res) => {
+  const {itemName, cost} = req.body;
+  insertItem(itemName, cost);
   res.send(items);
 }

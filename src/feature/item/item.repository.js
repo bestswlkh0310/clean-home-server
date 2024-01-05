@@ -1,5 +1,6 @@
 import {items} from "../../store/item.store.js";
 
+let i = 0
 
 export function findItemById(id) {
   const items1 = items.filter(item => item.id === id);
@@ -16,4 +17,13 @@ export function removeItem(id) {
       return items;
     }
   }
+}
+
+export function insertItem(itemName, cost) {
+  items.push({
+    id: i++,
+    itemName: itemName,
+    createdAt: new Date(),
+    cost: cost
+  });
 }
