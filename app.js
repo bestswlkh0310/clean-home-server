@@ -25,6 +25,9 @@ let items = [];
  */
 let users = [];
 
+/**
+ * - itemController
+ */
 // get all items
 app.get('/all', (req, res) => {
   res.send('hi');
@@ -38,6 +41,42 @@ app.post('/add', (req, res) => {
 // complete clean
 app.delete('/complete', (req, res) => {
 
+});
+
+/**
+ * - userController
+ */
+
+function isRegister(id) {
+  return users.filter(user => user.id === id).length > 0;
+}
+
+function findUserById(id) {
+  return users.filter(user => user.id === id)[0];
+}
+
+app.post('/join', (req, res) => {
+  const {id, name} = req.body;
+  if (!isRegister(id)) {
+    users.push({
+      id: id,
+      name: name,
+      cost: 0
+    });
+  }
+  res.send({
+    message: 'success'
+  });
+});
+
+app.patch('/name', (req, res) => {
+  const {id, name} = req.body;
+  if (isRegister(id)) {
+    const user = findUserById(id);
+    res.send(user);
+  }
+
+  res.send();
 });
 
 app.listen(port, () => {
