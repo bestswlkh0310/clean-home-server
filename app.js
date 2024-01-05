@@ -1,7 +1,7 @@
 import express from 'express';
 const app = express();
 const port = 3000;
-
+app.use(express.json());
 // log middleware
 app.use((req, res, next) => {
   console.log(`[${new Date().toLocaleString()}] ${req.method} ${req.url}`);
@@ -56,11 +56,36 @@ let items = [
  */
 let users = [];
 
+// auth middleware
+app.use((req, res, next) => {
+
+  const uuid = uuidByHeaders(req.headers);
+
+  console.log(`auth mw - uuid: ${uuid}`);
+
+  const user = findUserByUUID(uuid);
+  if (!user) {
+    const user = registerUser(uuid);
+    console.log(`auth mw - registered `, user);
+  }
+  next();
+});
+
+
 /**
  * - itemController
  */
+
+function findItemById(id) {
+  const items1 = items.filter(item => item.id === id);
+  if (items1.length === 0) {
+    return;
+  }
+  return items1[0];
+}
+
 // get all items
-app.get('/all', (req, res) => {
+app.get('/item/all', (req, res) => {
   res.send(items);
 });
 
@@ -70,8 +95,19 @@ app.post('/add', (req, res) => {
 });
 
 // complete clean
-app.delete('/complete', (req, res) => {
+app.post('/item/complete', (req, res) => {
+  const user = findUserByUUID(uuidByHeaders(req.headers));
+  const {id} = req.body;
 
+  const item = findItemById(id);
+  if (!item) {
+    return res.status(400).send({
+      message: '잘못된 아이템'
+    })
+  }
+  items = items.filter(item => item.id !== id);
+  user.cost += item.cost;
+  res.send(items);
 });
 
 /**
@@ -100,36 +136,26 @@ function uuidByHeaders(header) {
   return header.authorization.split(' ')[1];
 }
 
-// auth middleware
-app.use((req, res, next) => {
-
-  const uuid = uuidByHeaders(req.headers);
-
-  console.log(`auth mw - uuid: ${uuid}`);
-
-  const user = findUserByUUID(uuid);
-  if (!user) {
-    const user = registerUser(uuid);
-    console.log(`auth mw - registered `, user);
-  }
-  next();
-});
-
 app.get('/user', (req, res) => {
   const user = findUserByUUID(uuidByHeaders(req.headers));
   res.send(user);
 });
 
-app.patch('/name', (req, res) => {
+app.patch('/user', (req, res) => {
+  console.log(req.body);
   const {id, name} = req.body;
-  // if (isRegister(id)) {
-  //   const user = findUserById(id);
-  //   res.send(user);
-  // }
 
-  res.status(400).send({
-    message: 'not found user'
-  });
+  const user = findUserByUUID(id);
+
+  if (!user) {
+    return res.status(400).send({
+      message: 'not found user'
+    });
+  }
+
+  user.name = name;
+  return res.send(user);
+
 });
 
 app.listen(port, () => {
