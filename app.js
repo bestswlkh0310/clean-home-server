@@ -15,7 +15,12 @@ app.use((req, res, next) => {
  * @createdAt: Date
  * @cost: Int
  */
-let items = [];
+let items = [{
+  id: 1,
+  itemName: 'test1',
+  createdAt: '2024!',
+  cost: 100
+}];
 
 /**
  * - userModel
@@ -30,7 +35,7 @@ let users = [];
  */
 // get all items
 app.get('/all', (req, res) => {
-  res.send('hi');
+  res.send(items);
 });
 
 // to add item to clean
@@ -55,18 +60,11 @@ function findUserById(id) {
   return users.filter(user => user.id === id)[0];
 }
 
-app.post('/join', (req, res) => {
-  const {id, name} = req.body;
-  if (!isRegister(id)) {
-    users.push({
-      id: id,
-      name: name,
-      cost: 0
-    });
-  }
-  res.send({
-    message: 'success'
-  });
+// auth middleware
+app.use((req, res, next) => {
+  const authorization = req.headers.authorization;
+  console.log(authorization);
+  next();
 });
 
 app.patch('/name', (req, res) => {
